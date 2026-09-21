@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minesweeper Show Hidden Data
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-14
+// @version      2026-09-20
 // @updateURL    https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @downloadURL  https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @description  try to take over the world!
@@ -127,21 +127,31 @@
             }
         }
         if(profileLoaded) {
-            if(document.getElementById('quest_row_0') && currSettings.dailyLoginConfirmation) {
+            currList = document.querySelectorAll('button');
+            var alreadyAdded = false;
+            for(i=0; i<currList.length; i++) {
+                if(currList[i].id.substr(0,9) == 'newButton') {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
+            if(!alreadyAdded && document.getElementById('quest_row_0') && currSettings.dailyLoginConfirmation) {
                 document.getElementById('quest_row_0').childNodes[3].children[1].hidden=true;
                 document.getElementById('quest_row_0').childNodes[3].children[1].children[0].id="questRow0_col3";
                 currNode = document.createElement('span');
                 currNode.innerHTML = '<span class="hidden-sm hidden-md hidden-lg"><button class="collect_btn_0 btn btn-danger btn-xs" data-loading-text="Loading..." style="margin: 4px 0px;"><i class="fa fa-check-square-o"></i> Collect</button><br></span>'
+                currNode.id = 'newButton3';
                 document.getElementById('quest_row_0').childNodes[3].children[1].before(currNode);
                 $(currNode).click(function(){showConfirmDialog("questRow0_col3")});
                 document.getElementById('quest_row_0').childNodes[4].children[0].hidden=true;
                 document.getElementById('quest_row_0').childNodes[4].children[0].children[0].id="questRow0_col4";
                 currNode = document.createElement('span');
                 currNode.innerHTML = '<span class="hidden-xs"><button class="collect_btn_0 btn btn-danger btn-xs" data-loading-text="Loading..." style="margin: 4px 0px;"><i class="fa fa-check-square-o"></i> Collect</button></span>'
+                currNode.id = 'newButton4';
                 document.getElementById('quest_row_0').childNodes[4].children[0].before(currNode);
                 $(currNode).click(function(){showConfirmDialog("questRow0_col4")});
             }
-            if(currSettings.eliteDowngradeConfirmation) {
+            if(!alreadyAdded && currSettings.eliteDowngradeConfirmation) {
                 currList = document.querySelectorAll('button');
                 for(i=0; i<currList.length; i++) {
                     if(currList[i].id.substr(0,9) == 'downgrade') {
@@ -151,6 +161,7 @@
                         currNode = document.createElement('span');
                         currNode.innerHTML = '<button class="btn btn-default btn-xs" data-loading-text="Loading..." data-original-title="Downgrade an elite quest to a testing quest." title="" style="margin-top: 4px;"><i class="glyphicon glyphicon-arrow-down" style="font-size: 12px;"></i> Downgrade</button>';
                         currNode = currNode.children[0];
+                        currNode.id = 'newButton'+currList[i].id;
                         document.getElementById(currList[i].id).before(currNode);
                         $(currNode).click(function(){showConfirmDialog(this.nextSibling.id)});
                     }
@@ -783,8 +794,9 @@
                             waitForTable();
                         }
                     }
-                    else if (e.data.startsWith('42[') && e.data.slice(0, 40).includes('GetQuestsWS')) {
+                    else if (e.data.startsWith('42[') && e.data.includes('dailyQuests') && window.location.href.indexOf('quests') > 0) {
                         // completely untested, but it's only adding quest confirmations after a replace so it should be fine for now.
+                        console.log(Date.now(),lastProfileLoad);
                         setTimeout(function(){
                             if(Date.now()>lastProfileLoad+600) {
                                 lastProfileLoad=Date.now();
