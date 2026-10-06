@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minesweeper Show Hidden Data
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-20
+// @version      2026-10-06
 // @updateURL    https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @downloadURL  https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @description  try to take over the world!
@@ -767,55 +767,54 @@
 
     window.WebSocket = function () {
         const ws = new OriginalWebSocket(...arguments);
-        const originalAddEventListener = ws.addEventListener;
+        if(ws.url.substr(0,10) == "wss://main") {
+            const originalAddEventListener = ws.addEventListener;
 
-        ws.addEventListener = function (event, cb) {
-            if (event === "message") {
-                const proxiedCallback = function (e) {
-                    //console.log(e.data.slice(0, 45));
-                    if (e.data.startsWith('42[') && e.data.slice(0, 65).includes('user')) {
-                        const o = JSON.parse(e.data.slice(2));
-                        console.log(o);
-                        if (o[1] && o[1][2] && o[1][2][0] && typeof o[1][2][0].userStat == 'object' && window.location.href.indexOf('player') > 0) {
-                            allTimeObject = o[1][2][0].userStat;
-                            seasonObject = o[1][2][0].seasonUserStat;
-                            arenaResults = o[1][2][0].arenaResults;
-                            waitForProfileHTML();
+            ws.addEventListener = function (event, cb) {
+                if (event === "message") {
+                    const proxiedCallback = function (e) {
+                        //console.log(e.data.slice(0, 45));
+                        if (e.data.startsWith('42[') && e.data.slice(0, 65).includes('user')) {
+                            const o = JSON.parse(e.data.slice(2));
+                            console.log(o);
+                            if (o[1] && o[1][2] && o[1][2][0] && typeof o[1][2][0].userStat == 'object' && window.location.href.indexOf('player') > 0) {
+                                allTimeObject = o[1][2][0].userStat;
+                                seasonObject = o[1][2][0].seasonUserStat;
+                                arenaResults = o[1][2][0].arenaResults;
+                                waitForProfileHTML();
+                            }
                         }
-                    }
-                    else if (e.data.startsWith('42[') && e.data.slice(0, 55).includes('"/pvp"')) {
-                        // pvp data
-                        const o = JSON.parse(e.data.slice(2));
-                        console.log(o);
-                        if (o[1] && o[1][2] && Array.isArray(o[1][2][0].rows)) {
-                            o[1][2][0].rows.forEach(x => {
-                                xmmrs[x.userId] = mmrToRating(x.xmmr);
-                            });
-                            waitForTable();
+                        else if (e.data.startsWith('42[') && e.data.slice(0, 55).includes('"/pvp"')) {
+                            // pvp data
+                            const o = JSON.parse(e.data.slice(2));
+                            console.log(o);
+                            if (o[1] && o[1][2] && Array.isArray(o[1][2][0].rows)) {
+                                o[1][2][0].rows.forEach(x => {
+                                    xmmrs[x.userId] = mmrToRating(x.xmmr);
+                                });
+                                waitForTable();
+                            }
                         }
-                    }
-                    else if (e.data.startsWith('42[') && e.data.includes('dailyQuests') && window.location.href.indexOf('quests') > 0) {
-                        // completely untested, but it's only adding quest confirmations after a replace so it should be fine for now.
-                        console.log(Date.now(),lastProfileLoad);
-                        setTimeout(function(){
-                            if(Date.now()>lastProfileLoad+600) {
-                                lastProfileLoad=Date.now();
-                                waitForQuests();
-                            }},500);
-                    }
-                    return cb.apply(this, arguments);
-                };
-                arguments[1] = proxiedCallback;
-            }
-            return originalAddEventListener.apply(this, arguments);
-        };
+                        else if (e.data.startsWith('42[') && e.data.includes('dailyQuests') && window.location.href.indexOf('quests') > 0) {
+                            setTimeout(function(){
+                                if(Date.now()>lastProfileLoad+600) {
+                                    lastProfileLoad=Date.now();
+                                    waitForQuests();
+                                }},500);
+                        }
+                        return cb.apply(this, arguments);
+                    };
+                    arguments[1] = proxiedCallback;
+                }
+                return originalAddEventListener.apply(this, arguments);
+            };
 
-        Object.defineProperty(ws, "onmessage", {
-            set(func) {
-                return ws.addEventListener("message", func, false);
-            }
-        });
-
+            Object.defineProperty(ws, "onmessage", {
+                set(func) {
+                    return ws.addEventListener("message", func, false);
+                }
+            });
+        }
         return ws;
     };
 })();
