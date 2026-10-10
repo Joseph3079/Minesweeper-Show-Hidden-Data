@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minesweeper Show Hidden Data
 // @namespace    http://tampermonkey.net/
-// @version      2026-10-06
+// @version      2026-10-10
 // @updateURL    https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @downloadURL  https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @description  try to take over the world!
@@ -763,10 +763,10 @@
             setTimeout(waitForProfileHTML,10);
         }
     }
-    const OriginalWebSocket = window.WebSocket;
+    window.OriginalWebSocket = window.WebSocket;
 
     window.WebSocket = function () {
-        const ws = new OriginalWebSocket(...arguments);
+        const ws = new window.OriginalWebSocket(...arguments);
         if(ws.url.substr(0,10) == "wss://main") {
             const originalAddEventListener = ws.addEventListener;
 
@@ -814,6 +814,7 @@
                     return ws.addEventListener("message", func, false);
                 }
             });
+            window.WebSocket = window.OriginalWebSocket;
         }
         return ws;
     };
