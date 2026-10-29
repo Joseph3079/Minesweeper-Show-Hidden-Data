@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minesweeper Show Hidden Data
 // @namespace    http://tampermonkey.net/
-// @version      2026-10-10
+// @version      2026-10-28
 // @updateURL    https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @downloadURL  https://raw.githubusercontent.com/Joseph3079/Minesweeper-Show-Hidden-Data/refs/heads/main/main.js
 // @description  try to take over the world!
@@ -651,7 +651,7 @@
                 for(i=0; i<currList4.length; i++) {
                     if(currList4[i].innerText == 'Arena points:') {
                         currNode = document.createElement('span');
-                        currNode.innerText = Math.floor(allTimeObject.arenaDuration/3600000).toString().padStart(2, "0")+':'+Math.floor(allTimeObject.arenaDuration/60000%60).toString().padStart(2, "0")+':'+Math.floor(allTimeObject.arenaDuration/10000%60).toString().padStart(2, "0");
+                        currNode.innerText = Math.floor(allTimeObject.arenaDuration/3600000).toString().padStart(2, "0")+':'+Math.floor(allTimeObject.arenaDuration/60000%60).toString().padStart(2, "0")+':'+Math.floor(allTimeObject.arenaDuration/1000%60).toString().padStart(2, "0");
                         $(currNode).click(function(r){toggleArenas();});
                         currList8[i].childNodes[currList8[i].childNodes.length-1].after(currNode);
                         // Specific arena links
